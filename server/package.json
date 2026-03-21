@@ -1,0 +1,20 @@
+{
+    "name": "rental-bill-server",
+    "version": "1.0.0",
+    "description": "Backend for Rental Bill Generator",
+    "main": "index.js",
+    "type": "module",
+    "scripts": {
+        "start": "node index.js",
+        "dev": "node --watch index.js"
+    },
+    "dependencies": {
+        "cors": "^2.8.5",
+        "dotenv": "^16.4.5",
+        "express": "^4.19.2",
+        "multer": "^2.0.2",
+        "pg": "^8.11.5",
+        "sqlite": "^5.1.1",
+        "sqlite3": "^6.0.1"
+    }
+}
