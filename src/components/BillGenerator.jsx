@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import BillPreviewModal from './BillPreviewModal';
 import { useTenants } from '../context/TenantContext';
 import { ChevronDown, Info, Zap, Flame, Camera, UploadCloud, ArrowRight } from 'lucide-react';
+import { API_BASE_URL } from '../config';
 
 export default function BillGenerator() {
     const { tenants } = useTenants();
@@ -37,7 +38,7 @@ export default function BillGenerator() {
     useEffect(() => {
         const fetchSettings = async () => {
             try {
-                const res = await fetch('http://localhost:5000/api/settings');
+                const res = await fetch(`${API_BASE_URL}/api/settings`);
                 if (res.ok) {
                     const settings = await res.json();
                     setFormData(prev => ({

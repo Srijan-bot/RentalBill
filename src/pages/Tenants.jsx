@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useTenants } from '../context/TenantContext';
 import { PlusCircle, X, Edit2, Zap, Flame, Users } from 'lucide-react';
+import { API_BASE_URL } from '../config';
 
 export default function Tenants() {
     const { tenants, addTenant, updateTenant } = useTenants();
@@ -61,7 +62,7 @@ export default function Tenants() {
 
         if (isEditing && editId) {
             try {
-                const res = await fetch(`http://localhost:5000/api/tenants/${editId}`, {
+                const res = await fetch(`${API_BASE_URL}/api/tenants/${editId}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(tenantPayload)

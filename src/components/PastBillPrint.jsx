@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import * as pdfjsLib from 'pdfjs-dist/build/pdf';
+import { API_BASE_URL } from '../config';
 
 export default function PastBillPrint({ bill, onComplete }) {
     const [pdfImages, setPdfImages] = useState([]);
@@ -14,10 +15,22 @@ export default function PastBillPrint({ bill, onComplete }) {
                 setIsParsingPdf(true);
                 try {
                     // Fetch the PDF from the server uploads directory
-                    const pdfUrl = `http://localhost:5000/${bill.gas_bill_pdf}`;
-                    const response = await fetch(pdfUrl);
-                    if (response.ok) {
-                        const arrayBuffer = await response.arrayBuffer();
+                    let arrayBuffer;
+                    if (bill.gas_bill_pdf.startsWith('data:')) {
+                        const base64Data = bill.gas_bill_pdf.split(',')[1];
+                        const binaryString = window.atob(base64Data);
+                        const len = binaryString.length;
+                        const bytes = new Uint8Array(len);
+                        for (let i = 0; i < len; i++) {
+                            bytes[i] = binaryString.charCodeAt(i);
+                        }
+                        arrayBuffer = bytes.buffer;
+                    } else {
+                        const pdfUrl = `${API_BASE_URL}/${bill.gas_bill_pdf}`;
+                        const response = await fetch(pdfUrl);
+                        if (!response.ok) throw new Error("Failed to fetch PDF");
+                        arrayBuffer = await response.arrayBuffer();
+                    }
                         const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
                         
                         const images = [];
@@ -34,7 +47,6 @@ export default function PastBillPrint({ bill, onComplete }) {
                             images.push(canvas.toDataURL('image/png'));
                         }
                         if (isMounted) setPdfImages(images);
-                    }
                 } catch (err) {
                     console.error("Error parsing historic PDF:", err);
                 } finally {
@@ -196,7 +208,7 @@ export default function PastBillPrint({ bill, onComplete }) {
                                     <span>Electricity Meter Photo</span>
                                 </div>
                                 <img
-                                    src={`http://localhost:5000/${bill.elec_meter_img}`}
+                                    src={bill.elec_meter_img.startsWith('data:') ? bill.elec_meter_img : `${API_BASE_URL}/${bill.elec_meter_img}`}
                                     alt="Electricity Meter"
                                     style={{ maxHeight: '180px', objectFit: 'contain' }}
                                     className="rounded border border-slate-200 mt-2"
@@ -213,7 +225,7 @@ export default function PastBillPrint({ bill, onComplete }) {
                                     <span>Gas Meter Photo</span>
                                 </div>
                                 <img
-                                    src={`http://localhost:5000/${bill.gas_meter_img}`}
+                                    src={bill.gas_meter_img.startsWith('data:') ? bill.gas_meter_img : `${API_BASE_URL}/${bill.gas_meter_img}`}
                                     alt="Gas Meter"
                                     style={{ maxHeight: '180px', objectFit: 'contain' }}
                                     className="rounded border border-slate-200 mt-2"

@@ -1,4 +1,5 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
+import { API_BASE_URL } from '../config';
 
 const TenantContext = createContext();
 
@@ -11,7 +12,7 @@ export function TenantProvider({ children }) {
 
     // Fetch tenants from backend on load
     useEffect(() => {
-        fetch('http://localhost:5000/api/tenants')
+        fetch(`${API_BASE_URL}/api/tenants`)
             .then(res => res.json())
             .then(data => setTenants(data))
             .catch(err => console.error('Failed to fetch tenants:', err));
@@ -19,7 +20,7 @@ export function TenantProvider({ children }) {
 
     const addTenant = async (tenant) => {
         try {
-            const res = await fetch('http://localhost:5000/api/tenants', {
+            const res = await fetch(`${API_BASE_URL}/api/tenants`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -39,7 +40,7 @@ export function TenantProvider({ children }) {
 
     const updateTenant = async (id, updatedData) => {
         try {
-            const res = await fetch(`http://localhost:5000/api/tenants/${id}`, {
+            const res = await fetch(`${API_BASE_URL}/api/tenants/${id}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',

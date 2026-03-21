@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import PastBillPrint from './PastBillPrint';
 import { ArrowRight, Download, Mail, Loader2, FileText } from 'lucide-react';
+import { API_BASE_URL } from '../config';
 
 export default function RecentBills() {
     const [bills, setBills] = useState([]);
@@ -11,7 +12,7 @@ export default function RecentBills() {
     useEffect(() => {
         const fetchRecentBills = async () => {
             try {
-                const res = await fetch('http://localhost:5000/api/bills/recent');
+                const res = await fetch(`${API_BASE_URL}/api/bills/recent`);
                 if (!res.ok) throw new Error('Failed to fetch recent bills');
                 const data = await res.json();
                 setBills(data);
@@ -28,7 +29,7 @@ export default function RecentBills() {
 
     const handleDownload = async (billId) => {
         try {
-            const res = await fetch(`http://localhost:5000/api/bills/${billId}`);
+            const res = await fetch(`${API_BASE_URL}/api/bills/${billId}`);
             if (!res.ok) throw new Error('Failed to fetch bill details');
             const data = await res.json();
             setDownloadingBill(data);

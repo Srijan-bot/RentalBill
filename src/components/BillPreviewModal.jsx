@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import * as pdfjsLib from 'pdfjs-dist/build/pdf';
 import { Eye, FileText, CheckCircle2, FileDown, Loader2, Printer, X, AlertCircle, Camera } from 'lucide-react';
+import { API_BASE_URL } from '../config';
 
 // Initialize PDF.js worker securely using CDN to avoid Vite bundler issues
 pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
@@ -127,7 +128,7 @@ export default function BillPreviewModal({ formData, onClose, isOpen }) {
             if (formData.gasMeterImg) data.append('gasMeterImg', formData.gasMeterImg);
             if (formData.gasBillPdf) data.append('gasBillPdf', formData.gasBillPdf);
 
-            const res = await fetch('http://localhost:5000/api/bills', {
+            const res = await fetch(`${API_BASE_URL}/api/bills`, {
                 method: 'POST',
                 body: data
             });

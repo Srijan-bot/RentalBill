@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Settings2, Loader2, Save } from 'lucide-react';
+import { API_BASE_URL } from '../config';
 
 export default function Settings() {
     const [loading, setLoading] = useState(true);
@@ -15,7 +16,7 @@ export default function Settings() {
 
     const fetchSettings = async () => {
         try {
-            const res = await fetch('http://localhost:5000/api/settings');
+            const res = await fetch(`${API_BASE_URL}/api/settings`);
             if (res.ok) {
                 const data = await res.json();
                 setFormData({
@@ -34,7 +35,7 @@ export default function Settings() {
         e.preventDefault();
         setSaving(true);
         try {
-            const res = await fetch('http://localhost:5000/api/settings', {
+            const res = await fetch(`${API_BASE_URL}/api/settings`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData)
