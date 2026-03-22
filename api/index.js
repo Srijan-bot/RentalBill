@@ -75,14 +75,23 @@ const initDb = async () => {
     }
 };
 
-// Safe execution for serverless
-initDb();
+let dbInitialized = false;
+let initPromise = null;
+
+const ensureDbInit = async () => {
+    if (dbInitialized) return;
+    if (!initPromise) {
+        initPromise = initDb().then(() => { dbInitialized = true; });
+    }
+    await initPromise;
+};
 
 // Routes
 
 // GET settings
 app.get('/api/settings', async (req, res) => {
     try {
+        await ensureDbInit();
         const result = await pool.query('SELECT * FROM settings WHERE id = 1');
         if (result.rows.length > 0) {
             res.json(result.rows[0]);
@@ -91,7 +100,7 @@ app.get('/api/settings', async (req, res) => {
         }
     } catch (err) {
         console.error(err);
-        res.status(500).send('Server Error: ' + err.message);
+        res.status(500).json({ error: 'Server Error: ' + (err.message || String(err)) });
     }
 });
 
@@ -99,6 +108,7 @@ app.get('/api/settings', async (req, res) => {
 app.post('/api/settings', async (req, res) => {
     const { elec_rate, gas_rate } = req.body;
     try {
+        await ensureDbInit();
         const result = await pool.query(
             `INSERT INTO settings (id, elec_rate, gas_rate) VALUES (1, $1, $2) ON CONFLICT (id) DO UPDATE SET elec_rate = $1, gas_rate = $2 RETURNING *`,
             [elec_rate, gas_rate]
@@ -106,13 +116,14 @@ app.post('/api/settings', async (req, res) => {
         res.json(result.rows[0]);
     } catch (err) {
         console.error(err);
-        res.status(500).send('Server Error: ' + err.message);
+        res.status(500).json({ error: 'Server Error: ' + (err.message || String(err)) });
     }
 });
 
 // GET all tenants
 app.get('/api/tenants', async (req, res) => {
     try {
+        await ensureDbInit();
         const result = await pool.query('SELECT * FROM tenants ORDER BY id ASC');
         // Map DB columns to Frontend expected keys
         const tenants = result.rows.map(row => ({
@@ -131,7 +142,7 @@ app.get('/api/tenants', async (req, res) => {
         res.json(tenants);
     } catch (err) {
         console.error(err);
-        res.status(500).send('Server Error: ' + err.message);
+        res.status(500).json({ error: 'Server Error: ' + (err.message || String(err)) });
     }
 });
 
@@ -139,6 +150,7 @@ app.get('/api/tenants', async (req, res) => {
 app.post('/api/tenants', async (req, res) => {
     const { name, rent, advance, elec, gas, currElec, currGas, isGasApplicable } = req.body;
     try {
+        await ensureDbInit();
         const property = 'Not Assigned';
         const isGas = isGasApplicable !== undefined ? isGasApplicable : true;
         const startGas = isGas ? (gas || 0) : 0;
@@ -167,7 +179,7 @@ app.post('/api/tenants', async (req, res) => {
         res.json(newTenant);
     } catch (err) {
         console.error(err);
-        res.status(500).send('Server Error: ' + err.message);
+        res.status(500).json({ error: 'Server Error: ' + (err.message || String(err)) });
     }
 });
 
@@ -176,6 +188,7 @@ app.put('/api/tenants/:id', async (req, res) => {
     const { id } = req.params;
     const { name, rent, advance, elec, gas, currElec, currGas, isGasApplicable } = req.body;
     try {
+        await ensureDbInit();
         const isGas = isGasApplicable !== undefined ? isGasApplicable : true;
         const startGas = isGas ? (gas || 0) : 0;
         const currentGas = isGas ? (currGas || 0) : 0;
@@ -208,13 +221,14 @@ app.put('/api/tenants/:id', async (req, res) => {
         res.json(updatedTenant);
     } catch (err) {
         console.error(err);
-        res.status(500).send('Server Error: ' + err.message);
+        res.status(500).json({ error: 'Server Error: ' + (err.message || String(err)) });
     }
 });
 
 // GET recent bills
 app.get('/api/bills/recent', async (req, res) => {
     try {
+        await ensureDbInit();
         const query = `
             SELECT 
                 b.id,
@@ -232,7 +246,7 @@ app.get('/api/bills/recent', async (req, res) => {
         res.json(result.rows);
     } catch (err) {
         console.error('Error fetching recent bills:', err);
-        res.status(500).send('Server Error: ' + err.message);
+        res.status(500).json({ error: 'Server Error: ' + (err.message || String(err)) });
     }
 });
 
@@ -240,6 +254,7 @@ app.get('/api/bills/recent', async (req, res) => {
 app.get('/api/bills/:id', async (req, res) => {
     const { id } = req.params;
     try {
+        await ensureDbInit();
         const query = `
             SELECT 
                 b.*,
@@ -258,7 +273,7 @@ app.get('/api/bills/:id', async (req, res) => {
         res.json(result.rows[0]);
     } catch (err) {
         console.error('Error fetching bill:', err);
-        res.status(500).send('Server Error: ' + err.message);
+        res.status(500).json({ error: 'Server Error: ' + (err.message || String(err)) });
     }
 });
 
@@ -268,6 +283,7 @@ app.post('/api/bills', uploader.fields([
     { name: 'gasMeterImg', maxCount: 1 },
     { name: 'gasBillPdf', maxCount: 1 }
 ]), async (req, res) => {
+    await ensureDbInit();
     const client = await pool.connect();
     try {
         await client.query('BEGIN');
@@ -328,7 +344,7 @@ app.post('/api/bills', uploader.fields([
     } catch (err) {
         await client.query('ROLLBACK');
         console.error('Error saving bill:', err);
-        res.status(500).send('Server Error: ' + err.message);
+        res.status(500).json({ error: 'Server Error: ' + (err.message || String(err)) });
     } finally {
         client.release();
     }
