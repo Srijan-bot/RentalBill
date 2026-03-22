@@ -91,7 +91,7 @@ app.get('/api/settings', async (req, res) => {
         }
     } catch (err) {
         console.error(err);
-        res.status(500).send('Server Error');
+        res.status(500).send('Server Error: ' + err.message);
     }
 });
 
@@ -106,7 +106,7 @@ app.post('/api/settings', async (req, res) => {
         res.json(result.rows[0]);
     } catch (err) {
         console.error(err);
-        res.status(500).send('Server Error');
+        res.status(500).send('Server Error: ' + err.message);
     }
 });
 
@@ -131,7 +131,7 @@ app.get('/api/tenants', async (req, res) => {
         res.json(tenants);
     } catch (err) {
         console.error(err);
-        res.status(500).send('Server Error');
+        res.status(500).send('Server Error: ' + err.message);
     }
 });
 
@@ -167,7 +167,7 @@ app.post('/api/tenants', async (req, res) => {
         res.json(newTenant);
     } catch (err) {
         console.error(err);
-        res.status(500).send('Server Error');
+        res.status(500).send('Server Error: ' + err.message);
     }
 });
 
@@ -208,7 +208,7 @@ app.put('/api/tenants/:id', async (req, res) => {
         res.json(updatedTenant);
     } catch (err) {
         console.error(err);
-        res.status(500).send('Server Error');
+        res.status(500).send('Server Error: ' + err.message);
     }
 });
 
@@ -232,7 +232,7 @@ app.get('/api/bills/recent', async (req, res) => {
         res.json(result.rows);
     } catch (err) {
         console.error('Error fetching recent bills:', err);
-        res.status(500).send('Server Error');
+        res.status(500).send('Server Error: ' + err.message);
     }
 });
 
@@ -258,7 +258,7 @@ app.get('/api/bills/:id', async (req, res) => {
         res.json(result.rows[0]);
     } catch (err) {
         console.error('Error fetching bill:', err);
-        res.status(500).send('Server Error');
+        res.status(500).send('Server Error: ' + err.message);
     }
 });
 
