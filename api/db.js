@@ -1,12 +1,12 @@
 import pkg from 'pg';
 const { Pool } = pkg;
 
+const dbUrl = process.env.DATABASE_URL || process.env.POSTGRES_URL;
+
 // Use Neon Serverless Postgres DB URL
 const pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
-    ssl: {
-        rejectUnauthorized: false
-    }
+    connectionString: dbUrl,
+    ssl: dbUrl ? { rejectUnauthorized: false } : undefined
 });
 
 // Test connection
